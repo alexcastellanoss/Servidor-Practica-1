@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             lowercase: true,
-            trim: true
+            trim: true,
+            unique: true,
         },
 
         password: {
@@ -18,32 +19,34 @@ const userSchema = new mongoose.Schema(
 
         name: {
             type: String,
-            required: true,
+            required: false,
             trim: true
         },
 
         lastName: {
             type: String,
-            required: true,
+            required: false,
             trim: true
         },
 
         nif: {
             type: String,
-            required: true,
+            required: false,
             trim: true
         },
 
         role: {
             type: String,
             enum: ['admin', 'guest'],
-            default: 'admin'
+            default: 'admin',
+            unque: true
         },
 
         status: {
             type: String,
             enum: ['pending', 'verified'],
-            default: 'pending'
+            default: 'pending',
+            unque: true
         },
 
         verificationCode: {
@@ -60,7 +63,8 @@ const userSchema = new mongoose.Schema(
 
         company: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Company'
+            ref: 'Company',
+            unique: true,
         },
 
         address: {
@@ -75,7 +79,7 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
-        // Para manejo de sesiones
+
         refreshToken: {
             type: String,
             default: null
@@ -91,11 +95,6 @@ const userSchema = new mongoose.Schema(
 userSchema.virtual('fullName').get(function () {
     return `${this.name || ''} ${this.lastName || ''}`.trim();
 });
-
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ company: 1 });
-userSchema.index({ status: 1 });
-userSchema.index({ role: 1 });
 
 const User = mongoose.model('User', userSchema);
 

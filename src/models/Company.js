@@ -5,7 +5,8 @@ const companySchema = new mongoose.Schema(
         owner: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
-            required: true
+            required: true,
+            unique: true
         },
 
         name: {
@@ -50,9 +51,6 @@ const companySchema = new mongoose.Schema(
         versionKey: false
     }
 );
-
-companySchema.index({ cif: 1 }, { unique: true });
-companySchema.index({ owner: 1 });
 
 const Company = mongoose.model('Company', companySchema);
 
