@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:3000
+
+###
+GET {{baseUrl}}/api/users
+
+###
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+    "name": "John",
+    "lastName": "Doe",
+    "email": "johndoe@gmail.com",
+    "password": "password123",
+    "nif": "12345678A"
+}

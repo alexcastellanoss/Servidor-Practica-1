@@ -1,35 +1,67 @@
-// CAMBIAR (es de un ejercicio)
 import { z } from 'zod';
 
-export const validatorRegister = z.object({
-    body: z.object({
-        name: z.string()
-            .min(3, 'Mínimo 3 caracteres')
-            .max(99, 'Máximo 99 caracteres')
-            .trim(),
-        email: z.string()
-            .email('Email no válido')
-            .toLowerCase()
-            .trim(),
-        password: z.string()
-            .min(8, 'Mínimo 8 caracteres')
-            .max(16, 'Máximo 16 caracteres'),
-        age: z.number()
-            .int('Debe ser un número entero')
-            .min(0, 'Edad no puede ser negativa')
-            .max(120, 'Edad no válida')
-            .optional()
-    })
+export const registerSchema = z.object({
+    email: z.string()
+        .email('El email no es válido')
+        .transform(val => val.toLowerCase()),
+    password: z.string()
+        .min(8, 'La contraseña debe tener al menos 8 caracteres')
 });
 
-export const validatorLogin = z.object({
-    body: z.object({
-        email: z.string()
-            .email('Email no válido')
-            .toLowerCase()
-            .trim(),
-        password: z.string()
-            .min(8, 'Mínimo 8 caracteres')
-            .max(16, 'Máximo 16 caracteres')
-    })
+export const verifyEmailSchema = z.object({
+    code: z.string()
+        .regex(/^\d{6}$/, 'El código debe tener exactamente 6 dígitos')
+});
+
+export const loginSchema = z.object({
+    email: z.string()
+        .email('El email no es válido')
+        .transform(val => val.toLowerCase()),
+    password: z.string()
+        .min(1, 'La contraseña es obligatoria')
+});
+
+export const personalDataSchema = z.object({
+    name: z.string()
+        .min(1, 'El nombre es obligatorio')
+        .trim(),
+    lastName: z.string()
+        .min(1, 'Los apellidos son obligatorios')
+        .trim(),
+    nif: z.string()
+        .min(1, 'El NIF es obligatorio')
+        .trim()
+});
+
+export const companyDataSchema = z.object({
+    name: z.string()
+        .min(1, 'El nombre es obligatorio')
+        .trim(),
+    cif: z.string()
+        .min(1, 'El CIF es obligatorio')
+        .trim(),
+    address: z.object({
+        street: z.string().trim().optional(),
+        number: z.string().trim().optional(),
+        postal: z.string().trim().optional(),
+        city: z.string().trim().optional(),
+        province: z.string().trim().optional()
+    }).optional(),
+    isFreelance: z.boolean().default(false)
+});
+
+export const changePasswordSchema = z.object({
+    currentPassword: z.string()
+        .min(1, 'La contraseña actual es obligatoria'),
+    newPassword: z.string()
+        .min(8, 'La nueva contraseña debe tener al menos 8 caracteres')
+}).refine(data => data.currentPassword !== data.newPassword, {
+    message: 'La nueva contraseña debe ser diferente a la actual',
+    path: ['newPassword']
+});
+
+export const inviteSchema = z.object({
+    email: z.string()
+        .email('El email no es válido')
+        .transform(val => val.toLowerCase())
 });

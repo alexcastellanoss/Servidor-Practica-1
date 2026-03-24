@@ -5,10 +5,8 @@ const userSchema = new mongoose.Schema(
         email: {
             type: String,
             required: true,
-            unique: true,
             lowercase: true,
-            trim: true,
-            index: true
+            trim: true
         },
 
         password: {
@@ -39,15 +37,13 @@ const userSchema = new mongoose.Schema(
         role: {
             type: String,
             enum: ['admin', 'guest'],
-            default: 'admin',
-            index: true
+            default: 'admin'
         },
 
         status: {
             type: String,
             enum: ['pending', 'verified'],
-            default: 'pending',
-            index: true
+            default: 'pending'
         },
 
         verificationCode: {
@@ -64,8 +60,7 @@ const userSchema = new mongoose.Schema(
 
         company: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Company',
-            index: true
+            ref: 'Company'
         },
 
         address: {
@@ -78,8 +73,12 @@ const userSchema = new mongoose.Schema(
 
         deleted: {
             type: Boolean,
-            default: false,
-            index: true
+            default: false
+        },
+        // Para manejo de sesiones
+        refreshToken: {
+            type: String,
+            default: null
         }
     },
     {
@@ -93,7 +92,6 @@ userSchema.virtual('fullName').get(function () {
     return `${this.name || ''} ${this.lastName || ''}`.trim();
 });
 
-// Ya los he puesto arriba comprobar cual dejar
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ company: 1 });
 userSchema.index({ status: 1 });
