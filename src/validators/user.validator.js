@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// Usuario
 export const registerSchema = z.object({
     email: z.string()
         .email('El email no es válido')
@@ -8,11 +9,13 @@ export const registerSchema = z.object({
         .min(8, 'La contraseña debe tener al menos 8 caracteres')
 });
 
+// Email
 export const verifyEmailSchema = z.object({
     code: z.string()
         .regex(/^\d{6}$/, 'El código debe tener exactamente 6 dígitos')
 });
 
+// Login
 export const loginSchema = z.object({
     email: z.string()
         .email('El email no es válido')
@@ -21,6 +24,7 @@ export const loginSchema = z.object({
         .min(1, 'La contraseña es obligatoria')
 });
 
+// Actualización de datos personales
 export const personalDataSchema = z.object({
     name: z.string()
         .min(1, 'El nombre es obligatorio')
@@ -33,6 +37,7 @@ export const personalDataSchema = z.object({
         .trim()
 });
 
+// Actualización de datos de empresa
 export const companyDataSchema = z.object({
     name: z.string()
         .min(1, 'El nombre es obligatorio')
@@ -50,6 +55,7 @@ export const companyDataSchema = z.object({
     isFreelance: z.boolean().default(false)
 });
 
+// Cambio de contraseña
 export const changePasswordSchema = z.object({
     currentPassword: z.string()
         .min(1, 'La contraseña actual es obligatoria'),
@@ -60,6 +66,7 @@ export const changePasswordSchema = z.object({
     path: ['newPassword']
 });
 
+// Invitación de usuario
 export const inviteSchema = z.object({
     email: z.string()
         .email('El email no es válido')
