@@ -1,32 +1,25 @@
-import mongoose from 'mongoose';
+import { ZodError } from 'zod';
+import { AppError } from '../utils/AppError.js';
 
-export const validateBody = (schema) => (req, res, next) => {
+const validate = (schema) => async (req, res, next) => {
     try {
-        req.body = schema.parse(req.body);
+        await schema.parseAsync({
+            body: req.body,
+            query: req.query,
+            params: req.params
+        });
         next();
     } catch (error) {
-        const errors = error.issues.map(e => ({
-            field: e.path.join('.'),
-            message: e.message
-        }));
+        if (error instanceof ZodError) {
+            const errors = error.issues.map(err => ({
+                campo: err.path.join('.'),
+                mensaje: err.message
+            }));
 
-        res.status(400).json({
-            error: true,
-            message: 'Error de validación',
-            details: errors
-        });
+            throw AppError.validation('Error de validación', errors);
+        }
+        next(error);
     }
 };
 
-export const validateObjectId = (paramName = 'id') => (req, res, next) => {
-    const id = req.params[paramName];
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({
-            error: true,
-            message: `'${paramName}' no es un ID válido`
-        });
-    }
-
-    next();
-};
+export default validate;

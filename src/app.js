@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/error-handler.js';
-import { sanitize } from 'express-mongo-sanitize';
+import { sanitizeBody } from './middleware/sanitize.middleware.js';
 
 const app = express();
 
@@ -17,14 +17,12 @@ app.use(rateLimit({
     message: { error: true, message: 'Demasiadas peticiones, intenta más tarde' }
 }));
 
-
 app.use('/uploads', express.static('uploads'));
 
 app.use('/api', routes);
 
 app.use(errorHandler);
 
-// Sanitizer
-
+app.use(sanitizeBody);
 
 export default app;
