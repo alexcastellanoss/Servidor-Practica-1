@@ -1,4 +1,3 @@
-// Comprueba que el usuario autenticado tiene uno de los roles permitidos
 export const checkRole = (...roles) => (req, res, next) => {
     if (!roles.includes(req.user.role)) {
         return res.status(403).json({

@@ -1,8 +1,5 @@
 import mongoose from 'mongoose';
 
-/**
- * Conecta a MongoDB usando la URI de .env
- */
 const dbConnect = async () => {
     const DB_URI = process.env.DB_URI;
 
@@ -12,7 +9,7 @@ const dbConnect = async () => {
     }
 
     try {
-        await mongoose.connect(DB_URI);
+        await mongoose.connect(DB_URI, { dbName: 'bildyapp-api' });
         console.log('✅ Conectado a MongoDB');
     } catch (error) {
         console.error('❌ Error conectando a MongoDB:', error.message);
@@ -20,7 +17,6 @@ const dbConnect = async () => {
     }
 };
 
-// Eventos de conexión
 mongoose.connection.on('disconnected', () => {
     console.warn('⚠️ Desconectado de MongoDB');
 });
@@ -29,7 +25,6 @@ mongoose.connection.on('error', (err) => {
     console.error('❌ Error en MongoDB:', err.message);
 });
 
-// Cerrar conexión al terminar
 process.on('SIGINT', async () => {
     await mongoose.connection.close();
     console.log('🔌 Conexión a MongoDB cerrada');
