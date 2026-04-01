@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { softDeletePlugin } from '../plugins/softDelete.plugin';
 
 const userSchema = new mongoose.Schema(
     {
@@ -7,7 +8,7 @@ const userSchema = new mongoose.Schema(
             required: true,
             lowercase: true,
             trim: true,
-            unique: true,
+            unique: true
         },
 
         password: {
@@ -38,15 +39,13 @@ const userSchema = new mongoose.Schema(
         role: {
             type: String,
             enum: ['admin', 'guest'],
-            default: 'admin',
-            unque: true
+            default: 'admin'
         },
 
         status: {
             type: String,
             enum: ['pending', 'verified'],
-            default: 'pending',
-            unque: true
+            default: 'pending'
         },
 
         verificationCode: {
@@ -63,8 +62,7 @@ const userSchema = new mongoose.Schema(
 
         company: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Company',
-            unique: true,
+            ref: 'Company'
         },
 
         address: {
@@ -73,11 +71,6 @@ const userSchema = new mongoose.Schema(
             postal: { type: String, trim: true },
             city: { type: String, trim: true },
             province: { type: String, trim: true }
-        },
-
-        deleted: {
-            type: Boolean,
-            default: false
         },
 
         refreshToken: {
@@ -92,9 +85,15 @@ const userSchema = new mongoose.Schema(
     }
 );
 
+userSchema.index({ company: 1 });
+userSchema.index({ status: 1 });
+userSchema.index({ role: 1 });
+
 userSchema.virtual('fullName').get(function () {
     return `${this.name || ''} ${this.lastName || ''}`.trim();
 });
+
+userSchema.plugin(softDeletePlugin);
 
 const User = mongoose.model('User', userSchema);
 
