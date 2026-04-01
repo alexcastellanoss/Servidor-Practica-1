@@ -9,13 +9,13 @@ export const registerSchema = z.object({
         .min(8, 'La contraseña debe tener al menos 8 caracteres')
 });
 
-// Email
+// Verificación de email
 export const verifyEmailSchema = z.object({
     code: z.string()
         .regex(/^\d{6}$/, 'El código debe tener exactamente 6 dígitos')
 });
 
-// Login
+// Login de usuario
 export const loginSchema = z.object({
     email: z.string()
         .email('El email no es válido')

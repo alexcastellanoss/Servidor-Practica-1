@@ -1,16 +1,6 @@
 import mongoose from 'mongoose';
 
 /**
- * Middleware para rutas no encontradas
- */
-export const notFound = (req, res, next) => {
-    res.status(404).json({
-        error: true,
-        message: `Ruta no encontrada: ${req.method} ${req.originalUrl}`
-    });
-};
-
-/**
  * Middleware global de errores
  */
 export const errorHandler = (err, req, res, next) => {

@@ -1,30 +1,15 @@
 import { Router } from 'express';
 import {
-    registerUser,
-    verifyEmail,
-    loginUser,
-    updatePersonalData,
-    updateCompany,
-    uploadLogo,
-    getUser,
-    refreshToken,
-    logoutUser,
-    deleteUser,
-    changePassword,
-    inviteUser
+    registerUser, verifyEmail, loginUser, updatePersonalData, updateCompany, uploadLogo,
+    getUser, refreshToken, logoutUser, deleteUser, changePassword, inviteUser
 } from '../controllers/user.controller.js';
 import { validateBody } from '../middleware/validate.js';
 import { auth } from '../middleware/auth.middleware.js';
 import { checkRole } from '../middleware/role.middleware.js';
 import upload from '../middleware/upload.js';
 import {
-    registerSchema,
-    verifyEmailSchema,
-    loginSchema,
-    personalDataSchema,
-    companyDataSchema,
-    changePasswordSchema,
-    inviteSchema
+    registerSchema, verifyEmailSchema, loginSchema, personalDataSchema, companyDataSchema,
+    changePasswordSchema, inviteSchema
 } from '../validators/user.validator.js';
 
 const router = Router();
