@@ -4,7 +4,6 @@ import User from '../models/User.js';
 import Company from '../models/Company.js';
 import notificationService from '../services/notification.service.js';
 import { AppError } from '../utils/AppError.js';
-import { request } from 'http';
 
 const generateTokens = (user) => {
     const accessToken = jwt.sign(
@@ -21,7 +20,6 @@ const generateTokens = (user) => {
 };
 
 export const registerUser = async (req, res) => {
-
     const { email, password } = req.body;
 
     const exists = await User.findOne({ email });
@@ -55,7 +53,6 @@ export const registerUser = async (req, res) => {
 };
 
 export const verifyEmail = async (req, res) => {
-
     const user = await User.findById(req.user.id).select('+verificationCode +verificationAttempts');
 
     if (user.verificationAttempts < 0) {
@@ -78,7 +75,6 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-
     const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password');
@@ -104,7 +100,6 @@ export const loginUser = async (req, res) => {
 };
 
 export const updatePersonalData = async (req, res) => {
-
     const user = await User.findByIdAndUpdate(
         req.user.id,
         req.body,
@@ -195,11 +190,7 @@ export const refreshToken = async (req, res) => {
         throw AppError.unauthorized('Refresh token inválido');
     }
 
-    const accessToken = jwt.sign(
-        { id: user._id, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: '15m' }
-    );
+    const { accessToken } = generateTokens(user);
 
     res.json({ accessToken });
 };
@@ -232,6 +223,7 @@ export const changePassword = async (req, res) => {
     const isValid = await bcrypt.compare(currentPassword, user.password);
     if (!isValid) {
         throw AppError.unauthorized('Contraseña actual incorrecta');
+
     }
 
     user.password = await bcrypt.hash(newPassword, 10);

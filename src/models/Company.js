@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { softDeletePlugin } from '../plugins/softDelete.plugin.js';
 
 const companySchema = new mongoose.Schema(
     {
@@ -51,6 +52,8 @@ const companySchema = new mongoose.Schema(
         versionKey: false
     }
 );
+
+companySchema.plugin(softDeletePlugin);
 
 const Company = mongoose.model('Company', companySchema);
 

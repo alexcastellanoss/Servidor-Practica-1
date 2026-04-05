@@ -19,10 +19,10 @@ app.use(rateLimit({
 
 app.use('/uploads', express.static('uploads'));
 
+app.use(sanitizeBody);
+
 app.use('/api', routes);
 
 app.use(errorHandler);
-
-app.use(sanitizeBody);
 
 export default app;
