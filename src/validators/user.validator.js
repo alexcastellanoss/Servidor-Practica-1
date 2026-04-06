@@ -9,8 +9,7 @@ export const emailSchema = z.object({
     })
 });
 
-export const verifyEmailSchema = z.object({
-
+export const codeSchema = z.object({
     body: z.object({
         code: z.string()
             .regex(/^\d{6}$/, 'El código debe tener exactamente 6 dígitos')

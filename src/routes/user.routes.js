@@ -8,14 +8,14 @@ import { auth } from '../middleware/auth.middleware.js';
 import { checkRole } from '../middleware/role.middleware.js';
 import upload from '../middleware/upload.js';
 import {
-    verifyEmailSchema, personalDataSchema, companyDataSchema,
+    codeSchema, personalDataSchema, companyDataSchema,
     changePasswordSchema, emailSchema, refreshTokenSchema, deleteUserSchema
 } from '../validators/user.validator.js';
 
 const router = Router();
 
 router.post('/register', validate(emailSchema), registerUser);
-router.put('/validation', auth, validate(verifyEmailSchema), verifyEmail);
+router.put('/validation', auth, validate(codeSchema), verifyEmail);
 router.post('/login', validate(emailSchema), loginUser);
 router.put('/register', auth, validate(personalDataSchema), updatePersonalData);
 router.patch('/company', auth, validate(companyDataSchema), updateCompany);
