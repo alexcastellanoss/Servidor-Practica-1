@@ -4,10 +4,19 @@ import rateLimit from 'express-rate-limit';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { sanitizeBody } from './middleware/sanitize.middleware.js';
+import morganBody from 'morgan-body';
+import { loggerStream } from './utils/handleLogger.js';
 
 const app = express();
 
 app.use(express.json());
+
+// Después de express.json(), antes de las rutas
+morganBody(app, {
+    noColors: true,
+    skip: (req, res) => res.statusCode < 400, // Solo errores
+    stream: loggerStream
+});
 
 app.use(helmet());
 
