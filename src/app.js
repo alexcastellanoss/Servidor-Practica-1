@@ -30,6 +30,8 @@ app.use('/uploads', express.static('uploads'));
 
 app.use(sanitizeBody);
 
+//Swagger
+
 app.use('/api', routes);
 
 app.use(errorHandler);
