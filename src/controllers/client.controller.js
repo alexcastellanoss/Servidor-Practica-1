@@ -30,6 +30,13 @@ export const createClient = async (req, res) => {
         address
     });
 
+    const io = req.app.get('io');
+    if (io) {
+        io.to(`company_${user.company}`).emit('client:new', {
+            client
+        });
+    }
+
     res.status(201).json({ data: client });
 };
 

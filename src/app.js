@@ -1,4 +1,5 @@
 import express from 'express';
+import { createServer } from 'node:http';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import routes from './routes/index.js';
@@ -6,15 +7,19 @@ import { errorHandler } from './middleware/error-handler.js';
 import { sanitizeBody } from './middleware/sanitize.middleware.js';
 import morganBody from 'morgan-body';
 import { loggerStream } from './utils/handleLogger.js';
+import { setupSocket } from './socket/index.js';
 
 const app = express();
+const httpServer = createServer(app);
+const io = setupSocket(httpServer);
+
+app.set('io', io);
 
 app.use(express.json());
 
-// Después de express.json(), antes de las rutas
 morganBody(app, {
     noColors: true,
-    skip: (req, res) => res.statusCode < 400, // Solo errores
+    skip: (req, res) => res.statusCode < 400,
     stream: loggerStream
 });
 
@@ -30,10 +35,8 @@ app.use('/uploads', express.static('uploads'));
 
 app.use(sanitizeBody);
 
-//Swagger
-
 app.use('/api', routes);
 
 app.use(errorHandler);
 
-export default app;
+export { app, httpServer, io };

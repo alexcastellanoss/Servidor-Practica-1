@@ -1,14 +1,15 @@
-import app from './app.js'
-import dbConnect from './config/index.js'
+import { httpServer } from './app.js';
+import dbConnect from './config/index.js';
 
 const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
     try {
         await dbConnect();
-        app.listen(PORT, () => {
+        httpServer.listen(PORT, () => {
             console.log(`🚀 Servidor en http://localhost:${PORT}`);
             console.log(`📚 API en http://localhost:${PORT}/api`);
+            console.log(`🔌 WebSocket en ws://localhost:${PORT}`);
         });
     } catch (error) {
         console.error('❌ Error al iniciar:', error);
@@ -17,5 +18,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-

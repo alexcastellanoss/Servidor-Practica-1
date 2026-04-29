@@ -44,6 +44,13 @@ export const createProject = async (req, res) => {
 
     const populatedProject = await Project.findById(project._id).populate('client');
 
+    const io = req.app.get('io');
+    if (io) {
+        io.to(`company_${user.company}`).emit('project:new', {
+            project: populatedProject
+        });
+    }
+
     res.status(201).json({ data: populatedProject });
 };
 

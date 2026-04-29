@@ -54,6 +54,13 @@ export const createDeliveryNote = async (req, res) => {
         .populate('client')
         .populate('project');
 
+    const io = req.app.get('io');
+    if (io) {
+        io.to(`company_${user.company}`).emit('deliverynote:new', {
+            deliveryNote: populatedNote
+        });
+    }
+
     res.status(201).json({ data: populatedNote });
 };
 
@@ -134,7 +141,7 @@ export const signDeliveryNote = async (req, res) => {
     const deliveryNote = await DeliveryNote.findOne({
         _id: id,
         company: user.company
-    });
+    }).populate('client').populate('project');
 
     if (!deliveryNote) {
         throw AppError.notFound('Albarán');
@@ -166,6 +173,16 @@ export const signDeliveryNote = async (req, res) => {
 
     deliveryNote.pdfUrl = pdfUploadResult.secure_url;
     await deliveryNote.save();
+
+    const io = req.app.get('io');
+    if (io) {
+        io.to(`company_${user.company}`).emit('deliverynote:signed', {
+            deliveryNoteId: id,
+            signatureUrl: deliveryNote.signatureUrl,
+            pdfUrl: deliveryNote.pdfUrl,
+            signedAt: deliveryNote.signedAt
+        });
+    }
 
     res.json({
         data: deliveryNote,
