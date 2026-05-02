@@ -42,6 +42,19 @@ class StorageService {
         });
     }
 
+    async uploadLogo(buffer, companyId) {
+        return this.uploadBuffer(buffer, {
+            folder: 'bildyapp/logos',
+            public_id: `logo_${companyId}`,
+            overwrite: true,
+            transformation: [
+                { width: 500, crop: 'limit' },
+                { quality: 'auto:good' },
+                { fetch_format: 'auto' }
+            ]
+        });
+    }
+
     async uploadPDF(buffer, deliveryNoteId) {
         return this.uploadBuffer(buffer, {
             folder: 'bildyapp/pdfs',

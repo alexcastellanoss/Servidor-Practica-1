@@ -9,7 +9,7 @@ import {
 } from '../controllers/deliverynote.controller.js';
 import validate from '../middleware/validate.js';
 import { auth } from '../middleware/auth.middleware.js';
-import uploadSignature from '../middleware/uploadSignature.js';
+import { uploadSignature } from '../middleware/upload.js';
 import {
     createDeliveryNoteSchema,
     deliveryNoteIdSchema,

@@ -4,6 +4,8 @@ import User from '../models/User.js';
 import Company from '../models/Company.js';
 import notificationService from '../services/notification.service.js';
 import { AppError } from '../utils/AppError.js';
+import { sendEmail } from '../config/mail.js';
+import cloudinary from '../services/storage.service.js';
 
 const generateTokens = (user) => {
     const accessToken = jwt.sign(
@@ -42,11 +44,17 @@ export const registerUser = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
 
+    await sendEmail(
+        user.email,
+        'Código de verificación',
+        `<p>Tu código de verificación es: <b>${verificationCode}</b></p>`
+    );
+
     notificationService.emit('user:registered', user);
 
     res.status(201).json({
         data: { email: user.email, status: user.status, role: user.role },
-        verificationCode,
+        verificationCode, // En producción esto NO debería devolverse, solo para desarrollo
         accessToken,
         refreshToken
     });
@@ -55,7 +63,7 @@ export const registerUser = async (req, res) => {
 export const verifyEmail = async (req, res) => {
     const user = await User.findById(req.user.id).select('+verificationCode +verificationAttempts');
 
-    if (user.verificationAttempts < 0) {
+    if (user.verificationAttempts <= 0) {
         throw AppError.tooManyRequests('Has excedido el número de intentos de verificación.');
     }
 
@@ -159,7 +167,9 @@ export const uploadLogo = async (req, res) => {
         throw AppError.badRequest('No tienes una compañía asociada para subir un logo');
     }
 
-    const logoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const result = await cloudinary.uploadLogo(req.file.buffer, user.company.toString());
+
+    const logoUrl = result.secure_url;
 
     const company = await Company.findByIdAndUpdate(
         user.company,
@@ -236,7 +246,7 @@ export const changePassword = async (req, res) => {
 export const inviteUser = async (req, res) => {
     const { email, password } = req.body;
 
-    const inviter = await User.findById(req.user.id);
+    const inviter = await User.findById(req.user.id).populate('company');
 
     if (!inviter.company) {
         throw AppError.badRequest('No tienes una compañía asociada para invitar usuarios');
@@ -255,7 +265,7 @@ export const inviteUser = async (req, res) => {
         password: hashedPassword,
         verificationCode,
         verificationAttempts: 3,
-        company: inviter.company,
+        company: inviter.company._id,
         role: 'guest'
     });
 

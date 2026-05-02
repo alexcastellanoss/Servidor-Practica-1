@@ -1,7 +1,14 @@
 import mongoose from 'mongoose';
+import { sendErrorToSlack } from '../utils/handleLogger.js';
 
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = async (err, req, res, next) => {
     console.error('❌ Error:', err.message);
+
+    const statusCode = err.statusCode || err.status || 500;
+
+    if (statusCode >= 500) {
+        await sendErrorToSlack(err, req);
+    }
 
     if (err instanceof mongoose.Error.ValidationError) {
         const messages = Object.values(err.errors).map(e => e.message);
@@ -53,8 +60,9 @@ export const errorHandler = (err, req, res, next) => {
         });
     }
 
-    res.status(err.statusCode || err.status || 500).json({
+    res.status(statusCode).json({
         error: true,
-        message: err.message || 'Error interno del servidor'
+        message: err.message || 'Error interno del servidor',
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
     });
 };

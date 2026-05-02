@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --watch --env-file=.env src/index.js",
     "start": "node src/index.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit --detectOpenHandles",
+    "test": "node --env-file=.env.test --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit --detectOpenHandles",
     "test:watch": "npm test -- --watch",
     "test:coverage": "npm test -- --coverage"
   },
@@ -29,6 +29,7 @@
     "mongoose": "^9.2.1",
     "morgan-body": "^2.6.9",
     "multer": "^2.1.1",
+    "nodemailer": "^8.0.7",
     "pdfkit": "^0.15.2",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.3",
