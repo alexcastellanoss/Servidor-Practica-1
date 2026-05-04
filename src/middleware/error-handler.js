@@ -48,6 +48,13 @@ export const errorHandler = async (err, req, res, next) => {
         });
     }
 
+    if (err.code === 'INVALID_FILE_TYPE') {
+        return res.status(400).json({
+            error: true,
+            message: err.message
+        });
+    }
+
     if (err.name === 'ZodError') {
         const errors = err.errors.map(e => ({
             field: e.path.join('.'),

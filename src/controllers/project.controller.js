@@ -102,7 +102,10 @@ export const updateProject = async (req, res) => {
 };
 
 export const getProjects = async (req, res) => {
-    const { page, limit, name, client, active, sort } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const { name, client, active, sort } = req.query;
 
     const user = await User.findById(req.user.id);
 

@@ -8,7 +8,10 @@ const fileFilter = (req, file, cb) => {
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Formato de imagen no permitido. Solo JPEG, PNG y WebP'), false);
+        const error = new Error('Formato de imagen no permitido. Solo JPEG, PNG y WebP');
+        error.statusCode = 400;
+        error.code = 'INVALID_FILE_TYPE';
+        cb(error, false);
     }
 };
 

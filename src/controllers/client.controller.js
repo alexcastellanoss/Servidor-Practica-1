@@ -77,7 +77,9 @@ export const updateClient = async (req, res) => {
 };
 
 export const getClients = async (req, res) => {
-    const { page, limit, name, sort } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const { name, sort } = req.query;
 
     const user = await User.findById(req.user.id);
 
