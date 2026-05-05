@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Socket.IO Notifications Test</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        .status {
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .connected {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: crimson;
+            font-weight: bold;
+        }
+
+        .event {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-left: 5px solid #3b82f6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .event h3 {
+            margin: 0 0 8px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #f0f0f0;
+            padding: 8px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Socket.IO Notifications Test</h1>
+
+    <div class="status">
+        Estado:
+        <span id="status">Conectando...</span>
+    </div>
+
+    <div class="status">
+        Socket ID:
+        <span id="socketId">-</span>
+        <br />
+        Room:
+        <span id="room">-</span>
+    </div>
+
+    <h2>Eventos recibidos</h2>
+    <div id="events"></div>
+
+    <script>
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZjYwYzZmNGM0NjhiOTZkYzNhNjhkYyIsInJvbGUiOiJndWVzdCIsImlhdCI6MTc3Nzk3NzY5OSwiZXhwIjoxNzc3OTc4NTk5fQ.-4iLVuE3Hx6iPYpDIdXNI6GFnJSF2ZekWlHvu5P8FqY";
+
+        const statusElement = document.getElementById("status");
+        const socketIdElement = document.getElementById("socketId");
+        const roomElement = document.getElementById("room");
+        const eventsElement = document.getElementById("events");
+
+        const addEvent = (eventName, payload) => {
+            const eventElement = document.createElement("div");
+            eventElement.className = "event";
+
+            const title = document.createElement("h3");
+            title.textContent = eventName;
+
+            const time = document.createElement("p");
+            time.textContent = `Recibido: ${new Date().toLocaleString()}`;
+
+            const pre = document.createElement("pre");
+            pre.textContent = JSON.stringify(payload, null, 2);
+
+            eventElement.appendChild(title);
+            eventElement.appendChild(time);
+            eventElement.appendChild(pre);
+
+            eventsElement.prepend(eventElement);
+        };
+
+        const socket = io("http://localhost:3000", {
+            auth: {
+                token
+            }
+        });
+
+        socket.on("connect", () => {
+            statusElement.textContent = "Conectado";
+            statusElement.className = "connected";
+            socketIdElement.textContent = socket.id;
+
+            addEvent("connect", {
+                socketId: socket.id
+            });
+        });
+
+        socket.on("notifications:connected", data => {
+            roomElement.textContent = data.room;
+            addEvent("notifications:connected", data);
+        });
+
+        socket.on("client:new", client => {
+            addEvent("client:new", client);
+        });
+
+        socket.on("project:new", project => {
+            addEvent("project:new", project);
+        });
+
+        socket.on("deliverynote:new", deliveryNote => {
+            addEvent("deliverynote:new", deliveryNote);
+        });
+
+        socket.on("deliverynote:signed", deliveryNote => {
+            addEvent("deliverynote:signed", deliveryNote);
+        });
+
+        socket.on("disconnect", reason => {
+            statusElement.textContent = `Desconectado: ${reason}`;
+            statusElement.className = "error";
+
+            addEvent("disconnect", {
+                reason
+            });
+        });
+
+        socket.on("connect_error", error => {
+            statusElement.textContent = `Error: ${error.message}`;
+            statusElement.className = "error";
+
+            addEvent("connect_error", {
+                message: error.message
+            });
+        });
+    </script>
+</body>
+
+</html>

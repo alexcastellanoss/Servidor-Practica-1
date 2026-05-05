@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 export function setupSocket(httpServer) {
     const io = new Server(httpServer, {
@@ -9,7 +10,7 @@ export function setupSocket(httpServer) {
         }
     });
 
-    io.use((socket, next) => {
+    io.use(async (socket, next) => {
         const token = socket.handshake.auth.token
             || socket.handshake.headers.authorization?.split(' ')[1];
 
@@ -19,7 +20,14 @@ export function setupSocket(httpServer) {
 
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            socket.user = decoded;
+            const user = await User.findById(decoded.id).select('company');
+
+            socket.user = {
+                id: decoded.id,
+                role: decoded.role,
+                companyId: user?.company
+            };
+
             next();
         } catch (error) {
             next(new Error('Token inválido'));
@@ -29,7 +37,9 @@ export function setupSocket(httpServer) {
     io.on('connection', (socket) => {
         console.log(`[WS] Usuario conectado: ${socket.user.id}`);
 
-        socket.join(`company_${socket.user.companyId}`);
+        if (socket.user.companyId) {
+            socket.join(`company_${socket.user.companyId}`);
+        }
 
         socket.on('disconnect', () => {
             console.log(`[WS] Usuario desconectado: ${socket.user.id}`);
