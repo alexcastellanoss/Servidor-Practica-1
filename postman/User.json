@@ -282,7 +282,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"alex@gmail.com\",\n  \"password\": \"12345678\"\n}",
+          "raw": "{\n  \"email\": \"ach.castellanos@gmail.com\",\n  \"password\": \"11111111\"\n}",
           "options": {
             "raw": {
               "language": "json"

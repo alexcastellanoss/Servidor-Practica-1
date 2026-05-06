@@ -51,7 +51,6 @@ app.get('/health', async (req, res) => {
     };
 
     try {
-        // Check MongoDB connection
         if (mongoose.connection.readyState === 1) {
             healthcheck.status = 'OK';
         } else {

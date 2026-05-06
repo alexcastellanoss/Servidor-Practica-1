@@ -1,0 +1,413 @@
+{
+    "info": {
+        "name": "DeliveryNotes",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Crear albarán (material)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 201\", function () {",
+                            "    pm.response.to.have.status(201);",
+                            "});",
+                            "",
+                            "const response = pm.response.json();",
+                            "",
+                            "if (response.data && response.data._id) {",
+                            "    pm.environment.set(\"deliveryNoteId\", response.data._id);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"project\": \"{{projectId}}\",\n  \"client\": \"{{clientId}}\",\n  \"format\": \"material\",\n  \"workDate\": \"2025-01-15\",\n  \"description\": \"Entrega de materiales para reforma\",\n  \"material\": \"Cemento gris 25kg\",\n  \"quantity\": 20,\n  \"unit\": \"sacos\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote"]
+                }
+            }
+        },
+        {
+            "name": "Crear albarán (horas)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 201\", function () {",
+                            "    pm.response.to.have.status(201);",
+                            "});",
+                            "",
+                            "const response = pm.response.json();",
+                            "",
+                            "if (response.data && response.data._id) {",
+                            "    pm.environment.set(\"deliveryNoteId\", response.data._id);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"project\": \"{{projectId}}\",\n  \"client\": \"{{clientId}}\",\n  \"format\": \"hours\",\n  \"workDate\": \"2025-01-16\",\n  \"description\": \"Jornada de trabajo albañilería\",\n  \"hours\": 8\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote"]
+                }
+            }
+        },
+        {
+            "name": "Crear albarán (con trabajadores)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 201\", function () {",
+                            "    pm.response.to.have.status(201);",
+                            "});",
+                            "",
+                            "const response = pm.response.json();",
+                            "",
+                            "if (response.data && response.data._id) {",
+                            "    pm.environment.set(\"deliveryNoteId\", response.data._id);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"project\": \"{{projectId}}\",\n  \"client\": \"{{clientId}}\",\n  \"format\": \"hours\",\n  \"workDate\": \"2025-01-16\",\n  \"description\": \"Jornada de trabajo albañilería\",\n  \"workers\": [\n    {\n      \"name\": \"Juan Pérez\",\n      \"hours\": 8\n    },\n    {\n      \"name\": \"María García\",\n      \"hours\": 6\n    }\n  ]\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote"]
+                }
+            }
+        },
+        {
+            "name": "Listar albaranes",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test(\"Response has pagination\", function () {",
+                            "    const response = pm.response.json();",
+                            "    pm.expect(response).to.have.property('pagination');",
+                            "    pm.expect(response.pagination).to.have.property('totalPages');",
+                            "    pm.expect(response.pagination).to.have.property('totalItems');",
+                            "    pm.expect(response.pagination).to.have.property('currentPage');",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote?page=1&limit=10",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote"],
+                    "query": [
+                        {
+                            "key": "page",
+                            "value": "1"
+                        },
+                        {
+                            "key": "limit",
+                            "value": "10"
+                        },
+                        {
+                            "key": "project",
+                            "value": "{{projectId}}",
+                            "disabled": true
+                        },
+                        {
+                            "key": "client",
+                            "value": "{{clientId}}",
+                            "disabled": true
+                        },
+                        {
+                            "key": "format",
+                            "value": "material",
+                            "disabled": true
+                        },
+                        {
+                            "key": "signed",
+                            "value": "true",
+                            "disabled": true
+                        },
+                        {
+                            "key": "from",
+                            "value": "2025-01-01",
+                            "disabled": true
+                        },
+                        {
+                            "key": "to",
+                            "value": "2025-12-31",
+                            "disabled": true
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Obtener albarán por ID",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote/{{deliveryNoteId}}",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote", "{{deliveryNoteId}}"]
+                }
+            }
+        },
+        {
+            "name": "Firmar albarán",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "signature",
+                            "type": "file",
+                            "src": []
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote/{{deliveryNoteId}}/sign",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote", "{{deliveryNoteId}}", "sign"]
+                }
+            }
+        },
+        {
+            "name": "Descargar PDF",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200 or 302\", function () {",
+                            "    pm.expect(pm.response.code).to.be.oneOf([200, 302]);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote/pdf/{{deliveryNoteId}}",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote", "pdf", "{{deliveryNoteId}}"]
+                }
+            }
+        },
+        {
+            "name": "Eliminar albarán (soft)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test(\"Status code is 200\", function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{accessToken}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:3000/api/deliverynote/{{deliveryNoteId}}?soft=true",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["api", "deliverynote", "{{deliveryNoteId}}"],
+                    "query": [
+                        {
+                            "key": "soft",
+                            "value": "true"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
