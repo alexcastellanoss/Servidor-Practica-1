@@ -30,23 +30,26 @@ export const personalDataSchema = z.object({
     })
 });
 
+const addressSchema = z.object({
+    street: z.string().trim().optional(),
+    number: z.string().trim().optional(),
+    postal: z.string().trim().optional(),
+    city: z.string().trim().optional(),
+    province: z.string().trim().optional()
+}).optional();
+
 export const companyDataSchema = z.object({
-    body: z.object({
-        name: z.string()
-            .min(1, 'El nombre es obligatorio')
-            .trim(),
-        cif: z.string()
-            .min(1, 'El CIF es obligatorio')
-            .trim(),
-        address: z.object({
-            street: z.string().trim().optional(),
-            number: z.string().trim().optional(),
-            postal: z.string().trim().optional(),
-            city: z.string().trim().optional(),
-            province: z.string().trim().optional()
-        }).optional(),
-        isFreelance: z.boolean().default(false)
-    })
+    body: z.discriminatedUnion('isFreelance', [
+        z.object({
+            isFreelance: z.literal(true)
+        }),
+        z.object({
+            isFreelance: z.literal(false),
+            name: z.string().min(1, 'El nombre es obligatorio').trim(),
+            cif: z.string().min(1, 'El CIF es obligatorio').trim(),
+            address: addressSchema
+        })
+    ])
 });
 
 export const changePasswordSchema = z.object({

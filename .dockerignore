@@ -1,0 +1,13 @@
+node_modules
+dist
+coverage
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+postman
+tests
+.env
+.env.*
+npm-debug.log

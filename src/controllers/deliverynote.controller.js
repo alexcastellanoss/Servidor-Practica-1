@@ -67,7 +67,7 @@ export const createDeliveryNote = async (req, res) => {
 export const getDeliveryNotes = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const { client, project, format, signed, sort } = req.query;
+    const { client, project, format, signed, from, to, sort } = req.query;
 
     const user = await User.findById(req.user.id);
 
@@ -87,6 +87,16 @@ export const getDeliveryNotes = async (req, res) => {
 
     if (signed !== undefined) {
         filter.signed = signed;
+    }
+
+    if (from || to) {
+        filter.workDate = {};
+        if (from) {
+            filter.workDate.$gte = new Date(from);
+        }
+        if (to) {
+            filter.workDate.$lte = new Date(to);
+        }
     }
 
     const skip = (page - 1) * limit;
