@@ -1,6 +1,7 @@
 import express from 'express';
 import { createServer } from 'node:http';
 import helmet from 'helmet';
+import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes/index.js';
@@ -21,23 +22,49 @@ app.use(express.json());
 
 morganBody(app, {
     noColors: true,
-    skip: (req, res) => res.statusCode < 400,
+    skip: (req, res) => res.statusCode < 500,
     stream: loggerStream
 });
 
 app.use(helmet());
 
-app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: { error: true, message: 'Demasiadas peticiones, intenta más tarde' }
-}));
+if (process.env.NODE_ENV !== 'test') {
+    app.use(rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 100,
+        message: { error: true, message: 'Demasiadas peticiones, intenta más tarde' }
+    }));
+}
 
 app.use('/uploads', express.static('uploads'));
 
 app.use(sanitizeBody);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
+app.get('/health', async (req, res) => {
+    const healthcheck = {
+        uptime: process.uptime(),
+        status: 'OK',
+        timestamp: Date.now(),
+        environment: process.env.NODE_ENV || 'development'
+    };
+
+    try {
+        // Check MongoDB connection
+        if (mongoose.connection.readyState === 1) {
+            healthcheck.status = 'OK';
+        } else {
+            healthcheck.status = 'DEGRADED';
+        }
+
+        res.status(healthcheck.status === 'OK' ? 200 : 503).json(healthcheck);
+    } catch (error) {
+        healthcheck.status = 'ERROR';
+        healthcheck.error = error.message;
+        res.status(503).json(healthcheck);
+    }
+});
 
 app.use('/api', routes);
 
