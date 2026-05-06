@@ -1,26 +1,38 @@
-# Práctica Intermedia: Gestión de Usuarios — BildyApp
+# Práctica Final: Digitalización de Albaranes — BildyApp
 
-API REST para la gestión de usuarios y compañías de BildyApp, desarrollada con Node.js, Express y MongoDB.
+API REST completa para la gestión de albaranes, clientes, proyectos y usuarios de BildyApp, desarrollada con Node.js, Express y MongoDB.
 
 ## Tecnologías utilizadas
 
 - **Node.js 22+** con ESM
 - **Express 5**
 - **MongoDB** + **Mongoose**
-- **JWT** para autenticación
+- **JWT** para autenticación (access + refresh tokens)
 - **Zod** para validación de datos
 - **bcryptjs** para cifrado de contraseñas
 - **Multer** para subida de archivos
+- **Cloudinary** para almacenamiento de imágenes y PDFs
+- **Sharp** para optimización de imágenes
+- **PDFKit** para generación de PDFs
+- **Socket.IO** para WebSockets en tiempo real
+- **Nodemailer** para envío de emails
+- **@slack/webhook** para notificaciones de errores
+- **Swagger** (`swagger-ui-express` + `swagger-jsdoc`) para documentación
+- **Jest** + **Supertest** para testing
+- **mongodb-memory-server** para tests
+- **Docker** + **Docker Compose** para contenedores
+- **GitHub Actions** para CI/CD
 - **Helmet** y **express-rate-limit** para seguridad
-- **EventEmitter** para eventos del ciclo de vida del usuario
 - **Soft delete** con plugin de Mongoose
-- **Postman** para pruebas de endpoints
 
 ## Requisitos
 
 - Node.js 22 o superior
 - MongoDB (local o Atlas)
 - npm
+- Cuenta de Cloudinary
+- Cuenta de Gmail con App Password
+- Webhook de Slack
 
 ## Instalación
 
@@ -30,18 +42,61 @@ Instalar dependencias:
 npm install
 ```
 
-Configurar variables de entorno:
-
 Crear un archivo `.env` en la raíz del proyecto:
 
 ```env
-PORT = 
-DB_URI = 
-NODE_ENV = 
-JWT_SECRET = 
-JWT_REFRESH_SECRET = 
-JWT_EXPIRES_IN = 
-JWT_REFRESH_EXPIRES_IN = 
+# Server
+PORT=3000
+NODE_ENV=development
+
+# Database
+DB_URI=mongodb://localhost:27017/bildyapp
+
+# JWT
+JWT_SECRET=tu_secret_key_segura
+JWT_REFRESH_SECRET=tu_refresh_secret_key_segura
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=tu_cloud_name
+CLOUDINARY_API_KEY=tu_api_key
+CLOUDINARY_API_SECRET=tu_api_secret
+
+# Email
+EMAIL_USER=tu_email@gmail.com
+EMAIL_PASSWORD=tu_app_password_gmail
+
+# Slack
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/TU_WEBHOOK
+```
+
+### Configurar Gmail App Password
+
+1. Ir a la cuenta de Google → Seguridad
+2. Activar verificación en 2 pasos
+3. Ir a "Contraseñas de aplicaciones"
+4. Generar contraseña para "Correo"
+5. Copiar la contraseña en `EMAIL_PASSWORD`
+
+### Configurar Slack Webhook
+
+1. Ir a <https://api.slack.com/apps>
+2. Crear nueva app
+3. Activar "Incoming Webhooks"
+4. Añadir webhook al canal
+5. Copiar URL en `SLACK_WEBHOOK_URL`
+
+Archivo `.env.test` para tests:
+
+```env
+PORT=3001
+NODE_ENV=test
+DB_URI=mongodb://localhost:27017/bildyapp_test
+JWT_SECRET=test_secret
+JWT_REFRESH_SECRET=test_refresh_secret
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
 ```
 
 ## Ejecución
@@ -52,25 +107,39 @@ Arrancar el servidor:
 npm run dev
 ```
 
-El servidor se levantará en `http://localhost:3000` (o el puerto que hayas configurado).
+El servidor se levantará en `http://localhost:3000`
 
 La API estará disponible en `http://localhost:3000/api`
 
+Ejecutar tests:
+
+```bash
+npm test
+```
+
+Con Docker:
+
+```bash
+docker-compose up --build
+```
+
+Esto levantará la API en `http://localhost:3000` y MongoDB en `mongodb://localhost:27017`
+
+## Documentación API
+
+Swagger disponible en: `http://localhost:3000/api-docs`
+
 ## Estructura del proyecto
 
-Árbol de archivos:
-
-``` bash
-src/
-├── node_modules/
-├── postman/
-│   ├── BildyApp.postman_collection
-│   └── servidor.postman_environment.json
+```
 ├── src/
 │   ├── config/
 │   │   └── index.js
 │   ├── controllers/
-│   │   └── user.controller.js
+│   │   ├── user.controller.js
+│   │   ├── client.controller.js
+│   │   ├── project.controller.js
+│   │   └── deliverynote.controller.js
 │   ├── middleware/
 │   │   ├── auth.middleware.js
 │   │   ├── error-handler.js
@@ -79,36 +148,64 @@ src/
 │   │   ├── upload.js
 │   │   └── validate.js
 │   ├── models/
+│   │   ├── User.js
 │   │   ├── Company.js
-│   │   └── User.js
+│   │   ├── Client.js
+│   │   ├── Project.js
+│   │   └── DeliveryNote.js
 │   ├── plugins/
 │   │   └── softDelete.plugin.js
 │   ├── routes/
 │   │   ├── index.js
-│   │   └── user.routes.js
+│   │   ├── user.routes.js
+│   │   ├── client.routes.js
+│   │   ├── project.routes.js
+│   │   └── deliverynote.routes.js
 │   ├── services/
-│   │   └── notification.service.js
+│   │   ├── notification.service.js
+│   │   ├── storage.service.js
+│   │   ├── email.service.js
+│   │   ├── pdf.service.js
+│   │   └── image.service.js
+│   ├── socket/
+│   │   └── index.js
 │   ├── utils/
 │   │   └── AppError.js
 │   ├── validators/
-│   │   └── user.validator.js
+│   │   ├── user.validator.js
+│   │   ├── client.validator.js
+│   │   ├── project.validator.js
+│   │   └── deliverynote.validator.js
 │   ├── app.js
-│   └── index.js
-├── uploads/
+│   ├── index.js
+│   └── swagger.js
+├── tests/
+│   ├── user.test.js
+│   ├── client.test.js
+│   ├── project.test.js
+│   ├── deliverynote.test.js
+│   ├── setup.js
+│   └── mocks/
+│       ├── cloudinary.js
+│       └── email.js
+├── postman/
+│   ├── User.json
+│   ├── Clients.json
+│   ├── Projects.json
+│   └── DeliveryNotes.json
+├── .github/
+│   └── workflows/
+│       └── test.yml
+├── Dockerfile
+├── docker-compose.yml
+├── jest.config.js
 ├── .env
 ├── .env.example
+├── .env.test
 ├── .gitignore
 ├── package.json
-├── package-lock.json
 └── README.md
 ```
-
-La carpeta `src/` contiene todo el código fuente dividido en: `config/` para la base de
-datos, `controllers/` con la lógica de los endpoints, `middleware/` para autenticación y validación, `models/`
-con los esquemas de MongoDB (User y Company), `plugins/` para el soft delete, `routes/` para las rutas,
-`validators/` con las validaciones Zod, `services/` para los eventos, y `utils/` con utilidades como la clase
-AppError. Fuera de `src/` está la carpeta `uploads/` donde se guardan los logos, `postman/` con la colección
-para probar la API, y los archivos de configuración como `.env`, `package.json` y `README.md`.
 
 ## Tokens
 
@@ -116,13 +213,181 @@ El `accessToken` se envía en cada petición dentro del header `Authorization: B
 
 El `refreshToken` no se usa en cada petición, sino en el endpoint de /refresh. Este token se genera junto al `accessToken` en el login o registro, se guarda en la base de datos asociado al usuario y se envía al cliente. Cuando el `accessToken` expira, el cliente envía el `refreshToken`, el servidor lo verifica y comprueba que coincide con el almacenado en la BD, y si es válido genera un nuevo `accessToken` sin necesidad de volver a iniciar sesión.
 
+## WebSockets
+
+La API emite eventos en tiempo real a través de Socket.IO. Solo se notifican a usuarios de la misma compañía.
+
+**Eventos de Clientes:**
+
+- `client:new` - Cliente creado
+- `client:updated` - Cliente actualizado
+- `client:deleted` - Cliente eliminado
+
+**Eventos de Proyectos:**
+
+- `project:new` - Proyecto creado
+- `project:updated` - Proyecto actualizado
+- `project:deleted` - Proyecto eliminado
+
+**Eventos de Albaranes:**
+
+- `deliverynote:new` - Albarán creado
+- `deliverynote:signed` - Albarán firmado
+
+## Testing
+
+Ejecutar todos los tests:
+
+```bash
+npm test
+```
+
+Ver cobertura:
+
+```bash
+npm run test:coverage
+```
+
+138 tests con cobertura >= 70%. Usa supertest para integración, MongoDB en memoria y mocks de Cloudinary/Nodemailer.
+
+## Docker
+
+Construir imagen:
+
+```bash
+docker build -t bildyapp .
+```
+
+Ejecutar con docker-compose:
+
+```bash
+docker-compose up
+```
+
+## CI/CD
+
+GitHub Actions ejecuta automáticamente en cada push:
+
+- Instalación de dependencias
+- Ejecución de tests
+- Verificación de cobertura
+- Subida a Codecov
+
 ## Endpoints
 
-### `POST /api/user/register`
+### Usuarios (`/api/user`)
 
-Registra un nuevo usuario en el sistema.
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/register` | Registrar nuevo usuario |
+| PUT | `/validation` | Validar email con código |
+| POST | `/login` | Iniciar sesión |
+| POST | `/refresh` | Renovar access token |
+| PUT | `/register` | Completar datos personales |
+| PUT | `/password` | Cambiar contraseña |
+| PATCH | `/company` | Crear/actualizar compañía |
+| PATCH | `/logo` | Subir logo de compañía |
+| GET | `/` | Obtener usuario autenticado |
+| POST | `/invite` | Invitar usuario (admin) |
+| POST | `/logout` | Cerrar sesión |
+| DELETE | `/` | Eliminar usuario (soft/hard) |
 
-**Body:**
+### Clientes (`/api/client`)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/` | Crear cliente |
+| GET | `/` | Listar clientes |
+| GET | `/:id` | Obtener cliente |
+| PUT | `/:id` | Actualizar cliente |
+| DELETE | `/:id` | Eliminar cliente |
+| GET | `/archived` | Listar archivados |
+| PATCH | `/:id/restore` | Restaurar cliente |
+
+Filtros: `?name=`
+
+### Proyectos (`/api/project`)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/` | Crear proyecto |
+| GET | `/` | Listar proyectos |
+| GET | `/:id` | Obtener proyecto |
+| PUT | `/:id` | Actualizar proyecto |
+| DELETE | `/:id` | Eliminar proyecto |
+| GET | `/archived` | Listar archivados |
+| PATCH | `/:id/restore` | Restaurar proyecto |
+
+Filtros: `?client=`, `?name=`, `?active=`
+
+### Albaranes (`/api/deliverynote`)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/` | Crear albarán |
+| GET | `/` | Listar albaranes |
+| GET | `/:id` | Obtener albarán |
+| PATCH | `/:id/sign` | Firmar albarán |
+| GET | `/pdf/:id` | Descargar PDF |
+| DELETE | `/:id` | Eliminar albarán |
+
+Filtros: `?project=`, `?client=`, `?format=`, `?signed=`, `?from=`, `?to=`
+
+**Tipos de albaranes:**
+
+Material:
+
+```json
+{
+  "project": "projectId",
+  "client": "clientId",
+  "format": "material",
+  "workDate": "2025-01-15",
+  "description": "Entrega de materiales",
+  "material": "Cemento gris 25kg",
+  "quantity": 20,
+  "unit": "sacos"
+}
+```
+
+Horas:
+
+```json
+{
+  "project": "projectId",
+  "client": "clientId",
+  "format": "hours",
+  "workDate": "2025-01-15",
+  "description": "Jornada de trabajo",
+  "hours": 8
+}
+```
+
+Horas con trabajadores:
+
+```json
+{
+  "project": "projectId",
+  "client": "clientId",
+  "format": "hours",
+  "workDate": "2025-01-15",
+  "description": "Jornada de trabajo",
+  "workers": [
+    {
+      "name": "Juan Pérez",
+      "hours": 8
+    }
+  ]
+}
+```
+
+## Ejemplos de uso
+
+### Registro e inicio de sesión
+
+**POST /api/user/register**
+
+Body:
 
 ```json
 {
@@ -131,7 +396,7 @@ Registra un nuevo usuario en el sistema.
 }
 ```
 
-**Respuesta:**
+Respuesta:
 
 ```json
 {
@@ -141,40 +406,24 @@ Registra un nuevo usuario en el sistema.
         "role": "admin"
     },
     "verificationCode": "133822",
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3NTQ3MjE1MCwiZXhwIjoxNzc1NDczMDUwfQ.TBmHxTbJMwFulsLIyAcr6bbZEETNyqTg3-XbVuWII0k",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsImlhdCI6MTc3NTQ3MjE1MCwiZXhwIjoxNzc2MDc2OTUwfQ.G3JQnmQ1CiMcPEIuBJs0gUkxuinXLHEvdzNdgHz4KCw"
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
----
+**PUT /api/user/validation**
 
-### `PUT /api/user/validation`
-
-Valida el email del usuario mediante el código recibido.
-
-**Body:**
+Body:
 
 ```json
 {
-  "code": "{{verificationCode}}"
+  "code": "133822"
 }
 ```
 
-**Respuesta:**
+**POST /api/user/login**
 
-```json
-{
-    "message": "Email verificado correctamente"
-}
-```
-
----
-
-### `POST /api/user/login`
-
-Inicia sesión con email y contraseña.
-
-**Body:**
+Body:
 
 ```json
 {
@@ -183,7 +432,7 @@ Inicia sesión con email y contraseña.
 }
 ```
 
-**Respuesta:**
+Respuesta:
 
 ```json
 {
@@ -192,40 +441,24 @@ Inicia sesión con email y contraseña.
         "status": "verified",
         "role": "admin"
     },
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3NTQ3MjE1NiwiZXhwIjoxNzc1NDczMDU2fQ.AIL0xjSEwmSI_waS30xKg-qZ5optEeuLrK_pu2hg7r8",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsImlhdCI6MTc3NTQ3MjE1NiwiZXhwIjoxNzc2MDc2OTU2fQ.A8hUx1ZDFAQI5z4IBOw12ht6sJz782lRew0qb5x52YI"
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
----
+**POST /api/user/refresh**
 
-### `POST /api/user/refresh`
-
-Renueva el access token usando el refresh token.
-
-**Body:**
+Body:
 
 ```json
 {
-  "refreshToken": "{{refreshToken}}"
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
-**Respuesta:**
+**PUT /api/user/register**
 
-```json
-{
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3NTQ3MjE5MSwiZXhwIjoxNzc1NDczMDkxfQ.I7sLQBQpMEAkpOdJV8bBP_2nq1vKzuSH1PamIgQIXaY"
-}
-```
-
----
-
-### `PUT /api/user/register`
-
-Completa los datos personales del usuario (nombre, apellidos, NIF y dirección).
-
-**Body:**
+Body:
 
 ```json
 {
@@ -242,46 +475,9 @@ Completa los datos personales del usuario (nombre, apellidos, NIF y dirección).
 }
 ```
 
-**Respuesta:**
+**PUT /api/user/password**
 
-```json
-{
-    "data": {
-        "address": {
-            "street": "Calle Calamar",
-            "number": "34",
-            "postal": "28232",
-            "city": "Las Rozas",
-            "province": "Madrid"
-        },
-        "_id": "69d38e16717571ce2581aabb",
-        "email": "alex@gmail.com",
-        "role": "admin",
-        "status": "verified",
-        "verificationCode": null,
-        "verificationAttempts": 3,
-        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsImlhdCI6MTc3NTQ3MjI0MCwiZXhwIjoxNzc2MDc3MDQwfQ.K2UJKPpceXPcWUVrO8RUdIengOWcJDNuGRHO4QMqaj8",
-        "deleted": false,
-        "deletedAt": null,
-        "deletedBy": null,
-        "createdAt": "2026-04-06T10:42:30.351Z",
-        "updatedAt": "2026-04-06T10:44:19.692Z",
-        "lastName": "Castellanos",
-        "name": "Alex",
-        "nif": "12345678A",
-        "fullName": "Alex Castellanos",
-        "id": "69d38e16717571ce2581aabb"
-    }
-}
-```
-
----
-
-### `PUT /api/user/password`
-
-Cambia la contraseña del usuario.
-
-**Body:**
+Body:
 
 ```json
 {
@@ -290,21 +486,9 @@ Cambia la contraseña del usuario.
 }
 ```
 
-**Respuesta:**
+**PATCH /api/user/company**
 
-```json
-{
-    "message": "Contraseña actualizada correctamente"
-}
-```
-
----
-
-### `PATCH /api/user/company`
-
-Registra al usuario una compañía.
-
-**Body para crear empresa:**
+Body para empresa:
 
 ```json
 {
@@ -321,7 +505,7 @@ Registra al usuario una compañía.
 }
 ```
 
-**Body para autónomo:**
+Body para autónomo:
 
 ```json
 {
@@ -329,149 +513,17 @@ Registra al usuario una compañía.
 }
 ```
 
-**Respuesta:**
+**PATCH /api/user/logo**
 
-```json
-{
-    "data": {
-        "user": {
-            "address": {
-                "street": "Calle Calamar",
-                "number": "34",
-                "postal": "28232",
-                "city": "Las Rozas",
-                "province": "Madrid"
-            },
-            "_id": "69d38e16717571ce2581aabb",
-            "email": "alex@gmail.com",
-            "role": "admin",
-            "status": "verified",
-            "verificationCode": null,
-            "verificationAttempts": 3,
-            "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsImlhdCI6MTc3NTQ3MjI0MCwiZXhwIjoxNzc2MDc3MDQwfQ.K2UJKPpceXPcWUVrO8RUdIengOWcJDNuGRHO4QMqaj8",
-            "deleted": false,
-            "deletedAt": null,
-            "deletedBy": null,
-            "createdAt": "2026-04-06T10:42:30.351Z",
-            "updatedAt": "2026-04-06T10:49:08.915Z",
-            "lastName": "Castellanos",
-            "name": "Alex",
-            "nif": "12345678A",
-            "company": "69d38fa4717571ce2581aacb",
-            "fullName": "Alex Castellanos",
-            "id": "69d38e16717571ce2581aabb"
-        },
-        "company": {
-            "owner": "69d38e16717571ce2581aabb",
-            "name": "NovaTech Solutions SL",
-            "cif": "B87654321",
-            "address": {
-                "street": "Calle Alcalá",
-                "number": "42",
-                "postal": "28014",
-                "city": "Madrid",
-                "province": "Madrid"
-            },
-            "logo": null,
-            "isFreelance": false,
-            "deleted": false,
-            "_id": "69d38fa4717571ce2581aacb",
-            "deletedAt": null,
-            "deletedBy": null,
-            "createdAt": "2026-04-06T10:49:08.872Z",
-            "updatedAt": "2026-04-06T10:49:08.872Z"
-        }
-    }
-}
-```
+Body: form-data con campo `logo` (archivo jpg, png, webp, máx 5MB)
 
----
+**GET /api/user**
 
-### `PATCH /api/user/logo`
+Devuelve usuario autenticado con su compañía.
 
-Sube el logo de la compañía del usuario.
+**POST /api/user/invite**
 
-**Body:**
-
-- Campo `logo` con el archivo de imagen (jpg, png, webp)
-- Tamaño máximo: 5MB
-
-**Respuesta:**
-
-```json
-{
-    "data": {
-        "logo": "http://localhost:3000/uploads/logo_1775472640553.jpg"
-    }
-}
-```
-
----
-
-### `GET /api/user`
-
-Obtiene los datos completos del usuario autenticado y su compañía.
-
-**Respuesta:**
-
-```json
-{
-    "data": {
-        "address": {
-            "street": "Calle Calamar",
-            "number": "34",
-            "postal": "28232",
-            "city": "Las Rozas",
-            "province": "Madrid"
-        },
-        "_id": "69d38e16717571ce2581aabb",
-        "email": "alex@gmail.com",
-        "role": "admin",
-        "status": "verified",
-        "verificationCode": null,
-        "verificationAttempts": 3,
-        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDM4ZTE2NzE3NTcxY2UyNTgxYWFiYiIsImlhdCI6MTc3NTQ3MjI0MCwiZXhwIjoxNzc2MDc3MDQwfQ.K2UJKPpceXPcWUVrO8RUdIengOWcJDNuGRHO4QMqaj8",
-        "deleted": false,
-        "deletedAt": null,
-        "deletedBy": null,
-        "createdAt": "2026-04-06T10:42:30.351Z",
-        "updatedAt": "2026-04-06T10:49:08.915Z",
-        "lastName": "Castellanos",
-        "name": "Alex",
-        "nif": "12345678A",
-        "company": {
-            "address": {
-                "street": "Calle Alcalá",
-                "number": "42",
-                "postal": "28014",
-                "city": "Madrid",
-                "province": "Madrid"
-            },
-            "_id": "69d38fa4717571ce2581aacb",
-            "owner": "69d38e16717571ce2581aabb",
-            "name": "NovaTech Solutions SL",
-            "cif": "B87654321",
-            "logo": "http://localhost:3000/uploads/logo_1775472640553.jpg",
-            "isFreelance": false,
-            "deleted": false,
-            "deletedAt": null,
-            "deletedBy": null,
-            "createdAt": "2026-04-06T10:49:08.872Z",
-            "updatedAt": "2026-04-06T10:50:40.582Z"
-        },
-        "fullName": "Alex Castellanos",
-        "id": "69d38e16717571ce2581aabb"
-    }
-}
-```
-
----
-
-### `POST /api/user/invite`
-
-Invita a un nuevo usuario a unirse a la compañía (solo admin).
-
-**Body:**
+Body:
 
 ```json
 {
@@ -480,66 +532,51 @@ Invita a un nuevo usuario a unirse a la compañía (solo admin).
 }
 ```
 
-**Respuesta:**
+**POST /api/user/logout**
 
-```json
-{
-    "data": {
-        "email": "invitado@gmail.com",
-        "role": "guest"
-    }
-}
-```  
+Cierra sesión.
 
----
+**DELETE /api/user**
 
-### `POST /api/user/logout`
-
-Cierra la sesión del usuario.
-
-**Respuesta:**
-
-```json
-{
-    "message": "Sesión cerrada correctamente"
-}
-```
-
----
-
-### `DELETE /api/user`
-
-Elimina la cuenta del usuario (soft o hard delete).
-
-**Query params:**
-
-- `soft = true` → Borrado lógico (marca como eliminado pero no borra de la BD)
-- `soft = false` → Borrado físico (elimina completamente de la BD)
-
-**Respuesta (soft delete):**
-
-```json
-{
-    "message": "Usuario desactivado correctamente"
-}
-```
-
-**Respuesta (hard delete):**
-
-```json
-{
-    "message": "Usuario eliminado correctamente"
-}
-```
+Query params: `?soft=true` (borrado lógico) o `?soft=false` (borrado físico)
 
 ## Pruebas con Postman
 
-Hay una colección de Postman incluida en la carpeta `/postman` con ejemplos de todas las peticiones.
+Colecciones disponibles en `/postman`:
 
-Pasos para usarla:
+- `User.json`
+- `Clients.json`
+- `Projects.json`
+- `DeliveryNotes.json`
 
-1. Importar `BildyApp.postman_collection.json` en Postman
-2. Importar `servidor.postman_environment.json` como environment
-3. Configurar la variable `baseUrl` con tu URL local (por defecto `http://localhost:3000/api`)
-4. Las demás variables (`accessToken`, `refreshToken`, `verificationCode`) se rellenan automáticamente
-5. Ejecutar las peticiones en el orden adecuado (registro → validación → login → resto de endpoints)
+Pasos:
+
+1. Importar las 4 colecciones en Postman
+2. Crear environment "servidor" con las variables: `accessToken`, `refreshToken`, `verificationCode`, `clientId`, `projectId`, `deliveryNoteId`
+3. Ejecutar en orden:
+   - User → Login (guarda `accessToken`)
+   - Clients → Crear cliente (guarda `clientId`)
+   - Projects → Crear proyecto (guarda `projectId`)
+   - DeliveryNotes → Crear albarán (guarda `deliveryNoteId`)
+
+Las variables se guardan automáticamente mediante scripts de test.
+
+## Seguridad
+
+- Helmet para headers HTTP
+- express-rate-limit para límite de peticiones
+- bcryptjs para cifrado de contraseñas
+- JWT para autenticación
+- Zod para validación de datos
+- CORS configurado
+
+## Notificaciones
+
+**Emails:**
+
+- Código de verificación en registro
+- Invitación de usuarios
+
+**Slack:**
+
+- Errores 5XX con stack trace y detalles del request
